@@ -1,9 +1,10 @@
 package $package;
 
-/**
- * @author <a href="mailto:dmitriy.g.matveev@gmail.com">Dmitry Matveev</a>
- */
 public $classKind $className {
+    #foreach($field in $fields)
+        public $field.type $field.name;
+    #end
+
     #foreach($method in $methods)
         $method.flags $method.returnType $method.name (
                 #foreach($parameterType in $method.parameterTypes)

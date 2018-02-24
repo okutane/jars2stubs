@@ -43,6 +43,7 @@ public class ClassDumper {
         ctx.put("package", clazz.getName().substring(0, classSeparatorPos));
         ctx.put("classKind", "class");
         ctx.put("className", clazz.getName().substring(classSeparatorPos + 1));
+        ctx.put("fields", clazz.getReferencedFields().values());
         ctx.put("methods", clazz.getReferencedMethods().values());
 
         VelocityContext context = new VelocityContext(ctx);

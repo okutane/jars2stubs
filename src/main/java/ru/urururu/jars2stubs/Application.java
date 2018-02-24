@@ -103,6 +103,15 @@ public class Application {
                 String type = nameAndType.getSignature(javaClass.getConstantPool());
                 referenceType(className).referenceMethod(name, type, true);
             }
+
+            @Override
+            public void visitConstantFieldref(ConstantFieldref obj) {
+                String className = obj.getClass(javaClass.getConstantPool());
+                ConstantNameAndType nameAndType = (ConstantNameAndType) javaClass.getConstantPool().getConstant(obj.getNameAndTypeIndex());
+                String name = nameAndType.getName(javaClass.getConstantPool());
+                String type = nameAndType.getSignature(javaClass.getConstantPool());
+                referenceType(className).referenceField(name, Utility.signatureToString(type, false));
+            }
         }));
     }
 
