@@ -13,6 +13,7 @@ public class ReferencedMethod {
     private final String signature;
     private final String returnType;
     private final List<String> parameterTypes = new ArrayList<>();
+    private final Map<String, Boolean> traits = new HashMap<>();
 
     static final Set<Character> primitives = new HashSet<>(Arrays.asList(
              'B','C','D','F','I','J','S','Z','V'
@@ -45,10 +46,17 @@ public class ReferencedMethod {
         }
 
         returnType = Utility.signatureToString(signature.substring(parametersEnd + 1), false);
+
+        parentClass.parentLibrary.referenceType(returnType);
+        parameterTypes.forEach(parentClass.parentLibrary::referenceType);
     }
 
     public String getFlags() {
         return "public";
+    }
+
+    public boolean getHasBody() {
+        return !parentClass.getTraits().contains(ReferencedClass.Trait.Interface);
     }
 
     public String getName() {
@@ -56,10 +64,24 @@ public class ReferencedMethod {
     }
 
     public String getReturnType() {
+        if (name.equals("<init>")) {
+            return "";
+        }
         return returnType;
     }
 
     public List<String> getParameterTypes() {
         return parameterTypes;
+    }
+
+    public void referenceTrait(String name, boolean value) {
+        Boolean old = traits.put(name, value);
+        if (old != null && old != value) {
+            throw new IllegalArgumentException(this.name + " " + name);
+        }
+    }
+
+    public Map<String, Boolean> getTraits() {
+        return traits;
     }
 }

@@ -1,25 +1,25 @@
 package ru.urururu.jars2stubs;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:dmitriy.g.matveev@gmail.com">Dmitry Matveev</a>
  */
 public class ReferencedClass {
+    final ReferencedLibrary parentLibrary;
     private final String name;
     private final Map<String, ReferencedField> referencedFields = new LinkedHashMap<>();
     private final Map<String, ReferencedMethod> referencedMethods = new LinkedHashMap<>();
+    private final Map<String, ReferencedClass> referencedClasses = new LinkedHashMap<>();
     private final Set<Trait> traits = new LinkedHashSet<>();
 
-    public ReferencedClass(String name) {
+    public ReferencedClass(ReferencedLibrary parentLibrary, String name) {
+        this.parentLibrary = parentLibrary;
         this.name = name;
     }
 
-    public void referenceField(String name, String type) {
-        referencedFields.put(name, new ReferencedField(this, name, type));
+    public ReferencedField referenceField(String name, String type) {
+        return referencedFields.computeIfAbsent(name, k -> new ReferencedField(this, name, type));
     }
 
     public ReferencedMethod referenceMethod(String name, String type, boolean isInterface) {
@@ -28,6 +28,10 @@ public class ReferencedClass {
         }
 
         return referencedMethods.computeIfAbsent(methodKey(name, type), k -> new ReferencedMethod(this, name, type));
+    }
+
+    public ReferencedClass referenceType(String name) {
+        return referencedClasses.computeIfAbsent(name, k -> new ReferencedClass(parentLibrary, name));
     }
 
     private String methodKey(String name, String type) {
@@ -50,12 +54,23 @@ public class ReferencedClass {
         return referencedFields;
     }
 
+    public Map<String, ReferencedClass> getReferencedClasses() {
+        return referencedClasses;
+    }
+
     @Override
     public String toString() {
         return name + ':' + traits;
     }
 
+    public String getSimpleName() {
+        return name.substring(name.lastIndexOf('.') + 1);
+    }
+
     enum Trait {
-        Interface
+        Interface,
+        Exception,
+        Implemented,
+        ;
     }
 }
