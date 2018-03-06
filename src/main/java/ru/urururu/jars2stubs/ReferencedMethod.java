@@ -11,6 +11,7 @@ public class ReferencedMethod {
     private final ReferencedClass parentClass;
     private final String name;
     private final String signature;
+    private final boolean isInterface;
     private final String returnType;
     private final List<String> parameterTypes = new ArrayList<>();
     private final Map<String, Boolean> traits = new HashMap<>();
@@ -19,10 +20,11 @@ public class ReferencedMethod {
              'B','C','D','F','I','J','S','Z','V'
     ));
 
-    public ReferencedMethod(ReferencedClass parentClass, String name, String signature) {
+    public ReferencedMethod(ReferencedClass parentClass, String name, String signature, boolean isInterface) {
         this.parentClass = parentClass;
         this.name = name;
         this.signature = signature;
+        this.isInterface = isInterface;
 
         int parametersEnd = signature.indexOf(')');
 
@@ -61,6 +63,14 @@ public class ReferencedMethod {
 
     public String getName() {
         return name;
+    }
+
+    public String getSignature() {
+        return signature;
+    }
+
+    public boolean isInterface() {
+        return isInterface;
     }
 
     public String getReturnType() {

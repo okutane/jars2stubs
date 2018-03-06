@@ -9,7 +9,6 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -75,7 +74,12 @@ public class ClassDumper {
 
         if (clazz.getTraits().contains(ReferencedClass.Trait.Exception)) {
             typeSpec.superclass(defaultExceptionSuperclass);
+        } else if (clazz.getSuperclass() != null) {
+            typeSpec.superclass(toTypeName(clazz.getSuperclass().getName()));
+        } else {
+            // we don't have impl for that clazz, superclass and interfaces should be inferred from called methods / used fields
         }
+        Arrays.stream(clazz.getInterfaces()).forEach(iface -> typeSpec.addSuperinterface(toTypeName(iface.getName())));
 
         for (ReferencedMethod referencedMethod : clazz.getReferencedMethods().values()) {
             MethodSpec.Builder methodSpec;

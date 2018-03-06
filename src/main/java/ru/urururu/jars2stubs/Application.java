@@ -43,7 +43,28 @@ public class Application {
         // todo post process referenced, but not found virtual methods!
         referencedLibrary.getReferencedClasses().entrySet().stream().filter(e -> visitedClasses.contains(e.getKey())).map(Map.Entry::getValue).forEach(clazz -> {
             clazz.getReferencedFields().values().stream().filter(f -> !Boolean.TRUE.equals(f.getTraits().get("implemented"))).forEach(f -> {
-                System.out.println(clazz.getName() + " doesnt have " + f.getName());
+                ReferencedClass currentClass = clazz;
+                while (currentClass.getSuperclass() != null) {
+                    ReferencedClass superclass = currentClass.getSuperclass();
+                    ReferencedField superField = superclass.referenceField(f.getName(), f.getType());
+                    f.getTraits().forEach(superField::referenceTrait);
+                    if (Boolean.TRUE.equals(superField.getTraits().get("implemented"))) {
+                        return;
+                    }
+                    currentClass = superclass;
+                }
+            });
+            clazz.getReferencedMethods().values().stream().filter(m -> !Boolean.TRUE.equals(m.getTraits().get("implemented"))).forEach(m -> {
+                ReferencedClass currentClass = clazz;
+                while (currentClass.getSuperclass() != null) {
+                    ReferencedClass superclass = currentClass.getSuperclass();
+                    ReferencedMethod superMethod = superclass.referenceMethod(m.getName(), m.getSignature(), m.isInterface());
+                    m.getTraits().forEach(superMethod::referenceTrait);
+                    if (Boolean.TRUE.equals(superMethod.getTraits().get("implemented"))) {
+                        return;
+                    }
+                    currentClass = superclass;
+                }
             });
         });
 
@@ -84,6 +105,9 @@ public class Application {
             @Override
             public void visitJavaClass(JavaClass obj) {
                 ReferencedClass referencedClass = referencedLibrary.referenceType(obj.getClassName());
+
+                referencedClass.referenceSuperclass(obj.getSuperclassName(), obj.getInterfaceNames());
+
                 referencedClass.getTraits().add(ReferencedClass.Trait.Implemented);
 
                 String[] interfaceNames = obj.getInterfaceNames();
